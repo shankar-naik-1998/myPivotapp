@@ -23,52 +23,59 @@ namespace myPivotapp.Controllers
     [ApiController]
     public class PivotController : ControllerBase
     {
-        public  static IPivotServices _pivotServices;
-       public  static JObject pivotInputJsonFIle;
+       
+        public static IPivotServices _pivotServices;
+        public static JObject pivotInputJsonFIle;
         public PivotController(IPivotServices pivotServices)
         {
             _pivotServices = pivotServices;
             JObject pivotInputJsonFIle;
         }
-       
-        [HttpPost]
-        public  IActionResult getPivot([FromForm] IFormFile Inputfile) {
-            
+
+        [Route("getPivot")]
+        [HttpGet]
+        public dynamic getPivot([FromQuery] string row, [FromQuery] string column, [FromQuery] string data)
+        {
+
             try
             {/*
                 if (Inputfile == null || Inputfile.Length == 0)
                     return Content("file not selected");*/
 
-                var filepath = Path.Combine(
-                            Directory.GetCurrentDirectory(),
-                            Inputfile.FileName);
+                var filepathforref = Path.Combine(
+                           Directory.GetCurrentDirectory(), "refertext.txt");
+                var filepath = System.IO.File.ReadAllText(filepathforref);
 
-                using (var stream = new FileStream(filepath, FileMode.Create))
-                {
-                    Inputfile.CopyToAsync(stream);
-                }
+                
 
                 string path = filepath;
+                
 
                 //Use when you can save the file-- string extension = Path.GetExtension(Inputfile.FileName);
-               // string path = @"C:\pivotInputFiles\SalesJan2009.xlsx";
+                //string path = @"C:\pivotInputFiles\SalesJan2009.xlsx";
                 string extension = Path.GetExtension(path);
+
+              
 
                 //string inputJsonString = string.Empty;
                 DataTable dt = new DataTable();
 
-                if(extension.ToString().ToUpper()=="CSV")
+                if (extension.ToString().ToUpper() == ".CSV")
                 {
+                    dt = _pivotServices.CSVToDataTable(path);
 
                 }
-                else if(extension.ToString().ToUpper()==".XLSX")
+                else if (extension.ToString().ToUpper() == ".XLSX")
                 {
                     dt = _pivotServices.ExcelToDataTable(path);
-                    
+
                 }
+                
+              
+
                 //inputJsonString = JsonConvert.SerializeObject(pivotInputJsonFIle);
                 //string text = System.IO.File.ReadAllText(@"C:\Users\user\pivotInputData.json");
-               
+
 
 
                 /*IEnumerable<BsonDocument> bsonIEnumerable = new List<BsonDocument>();
@@ -76,14 +83,16 @@ namespace myPivotapp.Controllers
                 string[] docs = inputJsonString.Split(separatingChars, System.StringSplitOptions.RemoveEmptyEntries);
                 foreach(var doc in docs)
                 {*/
-                    //var file = BsonSerializer.Deserialize<BsonDocument>(inputJsonString);
-                  
-                   
+                //var file = BsonSerializer.Deserialize<BsonDocument>(inputJsonString);
 
-               // }
-                //List<BsonDocument> result=_pivotServices.Create(dt);
 
-                return Ok();
+
+                // }
+                dynamic result=_pivotServices.Create(dt, row, column, data);
+               System.IO.File.Delete(filepath);
+                System.IO.File.Delete(filepathforref);
+
+                return result;
 
 
 
@@ -98,14 +107,84 @@ namespace myPivotapp.Controllers
                     pivotInput = BsonDocument.Parse(result.ToString())
 
                 };*/
+                
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                return BadRequest("Some thing went wrong Please try Agian..!");
+                return null;
+            }
+        }
+        [Route("getColumn")]
+        [HttpPost]
+        public IEnumerable<string> GetFormColumns([FromForm] IFormFile Inputfile)
+        {
+            try
+            {
+                var filepath = Path.Combine(
+                           Directory.GetCurrentDirectory(),
+                           Inputfile.FileName);
+
+                using (var stream = new FileStream(filepath, FileMode.Create))
+                {
+                    Inputfile.CopyToAsync(stream);
+                }
+
+                string path = filepath;
+                string extension = Path.GetExtension(path);
+                //Store the file to local with name as Temp for Future reference
+                /* var filepathforfuture = Path.Combine(
+                           Directory.GetCurrentDirectory(),
+                           string.Format("tempFile{0}", extension));
+
+                using (var futurestream = new FileStream(filepathforfuture, FileMode.Create))
+                {
+                    Inputfile.CopyToAsync(futurestream);
+                }*/
+
+                //Store the file filepathforfuture tolocal txt file
+               var txtfilepathforfuture = Path.Combine(
+                           Directory.GetCurrentDirectory(), "refertext.txt");
+
+                System.IO.File.WriteAllText(txtfilepathforfuture, filepath);
+
+
+
+                //--till here
+
+                //string inputJsonString = string.Empty;
+                DataTable dt = new DataTable();
+
+                if (extension.ToString().ToUpper() == ".CSV")
+                {
+                    dt = _pivotServices.CSVToDataTable(path);
+
+                }
+                else if (extension.ToString().ToUpper() == ".XLSX")
+                {
+                    dt = _pivotServices.ExcelToDataTable(path);
+
+                }
+                string[] columnNames = dt.Columns.Cast<DataColumn>()
+                                 .Select(x => x.ColumnName)
+                                 .ToArray();
+                return columnNames;
+
 
             }
-    }
+            catch (Exception e)
+            {
+                return null;
+            }
 
+
+        }
+
+        [HttpGet]
+        public string Get()
+        {
+            return "Welcome to Pivot App :) ";
+        }
     }
 }
+

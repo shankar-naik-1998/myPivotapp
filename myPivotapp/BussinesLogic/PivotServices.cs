@@ -44,8 +44,12 @@ namespace myPivotapp.BussinesLogic
 
         }
 
-        public List<BsonDocument> Create(DataTable pivotInput)
+        public  dynamic Create(DataTable pivotInput, string row, string column, string data)
         {
+            string row1 = row;
+            string col1 = column;
+            string data1 = data;
+
             try
             {
                 /*PivotInputModel model= new PivotInputModel()
@@ -69,19 +73,41 @@ namespace myPivotapp.BussinesLogic
                 }
 
                  _pivotInput.InsertManyAsync(batch.AsEnumerable());
-
-                var data2 = pivotInput.AsEnumerable().Select(x => new {
-                    Product = x.Field<String>("Product"),
-                    Payment_Type = x.Field<String>("Payment_Type"),
-
-                    Price = Convert.ToInt32( x.Field<String>("Price"))
+                var data2 = pivotInput.AsEnumerable().Select(x => new { 
+                    row_Key = x.Field<String>(row),
+                    Pivotted_column = x.Field<String>(column),
+                    data = Convert.ToDouble( x.Field<String>(data))
                 });
 
                 DataTable pivotDataTable = data2.ToPivotTable(
-                     item => item.Payment_Type,
-                    item => item.Product,
-                    items => items.Any() ? items.Sum(x => x.Price) : 0);
-                //Delete Afterward
+                     item => item.row_Key,
+                    item => item.Pivotted_column,
+                    items => items.Any() ? items.Sum(x => x.data) : 0);
+
+
+                /*dynamic pt =  pivotDataTable.Rows.Cast<DataRow>()
+                     .Select(row => pivotDataTable.Columns.Cast<DataColumn>()
+                     .Select(col => Convert.ToString(row[col]))
+                     .ToArray())
+                     .ToList();*/
+                //dynamic pt = pivotDataTable.AsEnumerable().ToArray();
+
+                string JSONString = string.Empty;
+                JSONString = Newtonsoft.Json.JsonConvert.SerializeObject(pivotDataTable);
+                
+
+
+
+                /*string[,] stringArray = new string[pivotDataTable.Rows.Count,pivotDataTable.Columns.Count];
+
+                for (int row = 0; row < pivotDataTable.Rows.Count; row++)
+                {
+                    for (int col = 0; col < pivotDataTable.Columns.Count; col++)
+                    {
+                        stringArray[row, col] = pivotDataTable.Rows[row][col].ToString();
+                    }
+                }*/
+                //Delete Afterward Only to store PivotedTable on to MongoDB
                 List<BsonDocument> newbatch = new List<BsonDocument>();
                 foreach (DataRow dr in pivotDataTable.Rows)
                 {
@@ -90,15 +116,17 @@ namespace myPivotapp.BussinesLogic
                 }
 
                 _pivotInput.InsertManyAsync(newbatch.AsEnumerable());
+
                 /*var dotNetObjList = newbatch.ConvertAll(BsonTypeMapper.MapToDotNetValue);
 
                 Newtonsoft.Json.JsonConvert.SerializeObject(dotNetObjList);*/
                 /*string JSONString = string.Empty;
                 return JSONString = Newtonsoft.Json.JsonConvert.SerializeObject(pivotDataTable);*/
-                return newbatch;
+
 
 
                 //--------till here
+                return JSONString;
 
 
             }
@@ -204,6 +232,12 @@ namespace myPivotapp.BussinesLogic
                                      string.IsNullOrWhiteSpace(field as string)))
              .CopyToDataTable();
 
+                foreach (var column in dt.Columns.Cast<DataColumn>().ToArray())
+                {
+                    if (dt.AsEnumerable().All(dr => dr.IsNull(column)))
+                        dt.Columns.Remove(column);
+                }
+
                 return dt;
 
 
@@ -215,6 +249,29 @@ namespace myPivotapp.BussinesLogic
 
 
 
+        }
+        public DataTable CSVToDataTable(string filepath)
+        {
+            DataTable dt = new DataTable();
+            using (StreamReader sr = new StreamReader(filepath))
+            {
+                string[] headers = sr.ReadLine().Split(',');
+                foreach (string header in headers)
+                {
+                    dt.Columns.Add(header);
+                }
+                while (!sr.EndOfStream)
+                {
+                    string[] rows = sr.ReadLine().Split(',');
+                    DataRow dr = dt.NewRow();
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        dr[i] = rows[i];
+                    }
+                    dt.Rows.Add(dr);
+                }
+            }
+            return dt;
         }
 
 

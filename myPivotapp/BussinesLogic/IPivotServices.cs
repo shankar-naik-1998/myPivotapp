@@ -12,9 +12,11 @@ namespace myPivotapp.BussinesLogic
 {
     public interface IPivotServices
     {
-        List<BsonDocument> Create(DataTable pivotInput);
+        dynamic Create(DataTable pivotInput, string row, string column, string data);
         DataTable ExcelToDataTable(string filepath);
+        DataTable CSVToDataTable(string filepath);
 
-      
+
+
     }
 }

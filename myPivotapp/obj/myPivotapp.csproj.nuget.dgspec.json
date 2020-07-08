@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\source\\repos\\techbees-pivot-app\\myPivotapp\\myPivotapp.csproj": {}
+    "C:\\Users\\user\\source\\repos\\myPivotapp\\myPivotapp\\myPivotapp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\source\\repos\\techbees-pivot-app\\myPivotapp\\myPivotapp.csproj": {
+    "C:\\Users\\user\\source\\repos\\myPivotapp\\myPivotapp\\myPivotapp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\source\\repos\\techbees-pivot-app\\myPivotapp\\myPivotapp.csproj",
+        "projectUniqueName": "C:\\Users\\user\\source\\repos\\myPivotapp\\myPivotapp\\myPivotapp.csproj",
         "projectName": "myPivotapp",
-        "projectPath": "C:\\Users\\user\\source\\repos\\techbees-pivot-app\\myPivotapp\\myPivotapp.csproj",
+        "projectPath": "C:\\Users\\user\\source\\repos\\myPivotapp\\myPivotapp\\myPivotapp.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\source\\repos\\techbees-pivot-app\\myPivotapp\\obj\\",
+        "outputPath": "C:\\Users\\user\\source\\repos\\myPivotapp\\myPivotapp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
